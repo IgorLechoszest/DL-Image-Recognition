@@ -1,6 +1,6 @@
 import torch
 from tqdm import tqdm
-
+from sklearn.metrics import precision_score, recall_score, f1_score, confusion_matrix
 
 def train(model, loader, optimizer, criterion, device):
 
@@ -33,6 +33,9 @@ def validate(model, loader, device):
     correct = 0
     total = 0
 
+    all_preds = []
+    all_labels = []
+
     with torch.no_grad():
         for images, labels in tqdm(loader):
 
@@ -44,4 +47,18 @@ def validate(model, loader, device):
 
             total += labels.size(0)
 
-    return correct / total
+            all_preds.extend(preds.cpu().numpy())
+            all_labels.extend(labels.cpu().numpy())
+    
+    accuracy = correct / total
+
+    precision = precision_score(all_labels, all_preds, average="macro")
+    recall = recall_score(all_labels, all_preds, average="macro")
+    f1 = f1_score(all_labels, all_preds, average="macro")
+
+    return {
+        "accuracy": accuracy,
+        "precision": precision,
+        "recall": recall,
+        "f1": f1
+    }

@@ -59,7 +59,7 @@ def VisionTransformer():
 
 def get_model(model):
     if model == "ResNet":
-        return ResNet152()
+        return SmallCNN()#ResNet152()
     elif model == "ConvNeXt":
         return ConvNeXtLarge()
     elif model == "VisionTransformer":
