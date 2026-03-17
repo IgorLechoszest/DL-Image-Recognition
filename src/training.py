@@ -1,4 +1,6 @@
 import torch
+from tqdm import tqdm
+
 
 def train(model, loader, optimizer, criterion, device):
 
@@ -6,7 +8,7 @@ def train(model, loader, optimizer, criterion, device):
 
     total_loss = 0
 
-    for images, labels in loader:
+    for images, labels in tqdm(loader):
 
         images, labels = images.to(device), labels.to(device)
 
@@ -24,7 +26,7 @@ def train(model, loader, optimizer, criterion, device):
 
     return total_loss / len(loader)
 
-def validate(model, loader):
+def validate(model, loader, device):
 
     model.eval()
 
@@ -32,7 +34,7 @@ def validate(model, loader):
     total = 0
 
     with torch.no_grad():
-        for images, labels in loader:
+        for images, labels in tqdm(loader):
 
             outputs = model(images.to(device))
 
