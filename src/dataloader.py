@@ -3,6 +3,7 @@ from torch.utils.data import DataLoader
 from torch.utils.data import Subset
 from collections import defaultdict
 import random
+import numpy as np
 
 def get_train_dataset(transform):
 
@@ -79,3 +80,8 @@ def few_shot_subset(dataset, samples_per_class=5, seed=42):
         selected_indices.extend(selected)
 
     return Subset(dataset, selected_indices)
+
+def get_subset(dataset, fraction=0.1):
+    size = int(len(dataset) * fraction)
+    indices = np.random.choice(len(dataset), size, replace=False)
+    return Subset(dataset, indices)

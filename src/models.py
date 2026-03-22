@@ -36,31 +36,60 @@ class SmallCNN(nn.Module): # for testing purposes only
 def ResNet152():
 
     model = models.resnet152(pretrained=True)
-    model.fc = nn.Linear(model.fc.in_features, 10)
 
+    for param in model.parameters():
+        param.requires_grad = False
+    
+    model.fc = nn.Linear(model.fc.in_features, 10)
+    
+    for param in model.fc.parameters():
+        param.requires_grad = True
     return model
 
 
 def ConvNeXtLarge():
 
     model = models.convnext_large(pretrained=True)
+    for param in model.parameters():
+        param.requires_grad = False
+    
     model.classifier[2] = nn.Linear(1536, 10)
+    
+    for param in model.classifier.parameters():
+        param.requires_grad = True
 
     return model
 
 def VisionTransformer():
 
     model = ViTForImageClassification.from_pretrained(
-        "google/vit-huge-patch14-224",
+        "google/vit-huge-patch14-224-in21k",
         num_labels=10
     )
-
+    for param in model.vit.parameters():
+        param.requires_grad = False
+    
+    for param in model.classifier.parameters():
+        param.requires_grad = True
     return model
 
 def get_model(model):
+
     if model == "ResNet":
-        return SmallCNN()#ResNet152()
+        return ResNet152()
     elif model == "ConvNeXt":
         return ConvNeXtLarge()
     elif model == "VisionTransformer":
         return VisionTransformer()
+    elif model == "SmallCNN":
+        return SmallCNN()
+    else:
+        raise ValueError('You must select one of following model: ["ResNet", "ConvNeXt", "VisionTransformer", "SmallCNN"].')    
+
+def train_mode(model):
+    # tryb treningowy
+    model.train()
+
+    # zamrażasz backbone
+    for param in model.vit.parameters():
+        param.requires_grad = False
