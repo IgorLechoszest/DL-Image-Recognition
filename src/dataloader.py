@@ -14,7 +14,7 @@ def get_train_dataset(transform):
     return train_dataset
 
 def get_val_train_dataset(model_type):
-    if model_type == "ResNet" or model_type == "ConvNeXt":
+    if model_type == "ResNet" or model_type == "ConvNeXt" or model_type == "SmallCNN":
         transform = transforms.Compose(
             [transforms.Resize((224, 224)),
             transforms.ToTensor(),
@@ -60,7 +60,7 @@ def get_val_test_dataloaders(val_dataset, test_dataset, batch_size=128):
 
 
 
-def few_shot_subset(dataset, samples_per_class=5, seed=42):
+def get_subset(dataset, samples_per_class=5, seed=42):
 
 
     random.seed(seed)
@@ -74,14 +74,9 @@ def few_shot_subset(dataset, samples_per_class=5, seed=42):
 
     for label, indices in class_indices.items():
         if len(indices) < samples_per_class:
-            raise ValueError(f"Za mało próbek dla klasy {label}")
+            raise ValueError(f"Not enough samples for label: {label}")
 
         selected = random.sample(indices, samples_per_class)
         selected_indices.extend(selected)
 
     return Subset(dataset, selected_indices)
-
-def get_subset(dataset, fraction=0.1):
-    size = int(len(dataset) * fraction)
-    indices = np.random.choice(len(dataset), size, replace=False)
-    return Subset(dataset, indices)
