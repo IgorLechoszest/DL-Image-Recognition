@@ -86,10 +86,4 @@ def get_model(model):
     else:
         raise ValueError('You must select one of following model: ["ResNet", "ConvNeXt", "VisionTransformer", "SmallCNN"].')    
 
-def train_mode(model):
-    # tryb treningowy
-    model.train()
 
-    # zamrażasz backbone
-    for param in model.vit.parameters():
-        param.requires_grad = False
