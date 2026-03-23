@@ -31,6 +31,13 @@ def get_val_train_dataset(model_type):
             mean=[0.5, 0.5, 0.5],
             std=[0.5, 0.5, 0.5])]
             )
+        
+    elif model_type == "SmallCNN":
+        transform = transforms.Compose([
+            transforms.Resize((32, 32)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]) 
+        ])
     
     val_dataset = datasets.ImageFolder(
             "../data/valid",
@@ -46,15 +53,15 @@ def get_val_train_dataset(model_type):
 def get_train_dataloaders(train_dataset, collate_fn=None, batch_size = 128):
 
     if collate_fn is None:
-        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle= True) 
+        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle= True, num_workers=0, pin_memory=True) 
     else:
-        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle= True ,collate_fn = collate_fn)
+        train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle= True ,collate_fn = collate_fn, num_workers=0, pin_memory=True)
     return train_loader
 
 def get_val_test_dataloaders(val_dataset, test_dataset, batch_size=128):
 
-    val_loader = DataLoader(val_dataset, batch_size=batch_size)
-    test_loader = DataLoader(test_dataset, batch_size=batch_size)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, num_workers=0, pin_memory=True)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, num_workers=0, pin_memory=True)
 
     return val_loader, test_loader
 
