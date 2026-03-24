@@ -14,7 +14,7 @@ def get_train_dataset(transform):
     return train_dataset
 
 def get_val_train_dataset(model_type):
-    if model_type == "ResNet" or model_type == "ConvNeXt" or model_type == "SmallCNN":
+    if model_type == "ResNet" or model_type == "ConvNeXt":
         transform = transforms.Compose(
             [transforms.Resize((224, 224)),
             transforms.ToTensor(),
@@ -22,6 +22,15 @@ def get_val_train_dataset(model_type):
             mean=[0.485, 0.456, 0.406],
             std=[0.229, 0.224, 0.225])]
             )
+        
+    elif model_type == "SmallCNN":
+        transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize(
+                mean=[0.4789, 0.4723, 0.4305],
+                std=[0.2421, 0.2383, 0.2587]
+            )
+        ])
 
     elif model_type == "VisionTransformer":
         transform = transforms.Compose(

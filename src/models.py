@@ -4,27 +4,23 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch
 
-class SmallCNN(nn.Module): # for testing purposes only
+class SmallCNN(nn.Module): 
     def __init__(self, num_classes=10):
         super(SmallCNN, self).__init__()
 
         self.conv1 = nn.Conv2d(3, 16, kernel_size=3, padding=1)
         self.pool = nn.MaxPool2d(2, 2)
-
         self.conv2 = nn.Conv2d(16, 32, kernel_size=3, padding=1)
-
-
         self.conv3 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
 
-        # 224 -> 112 -> 56 -> 28
-        self.fc1 = nn.Linear(64 * 28 * 28, 128)
+        # Updated math for 32x32 input: 32 -> 16 -> 8 -> 4
+        self.fc1 = nn.Linear(64 * 4 * 4, 128) 
         self.fc2 = nn.Linear(128, num_classes)
 
     def forward(self, x):
-
-        x = self.pool(F.relu(self.conv1(x)))  # 224 -> 112
-        x = self.pool(F.relu(self.conv2(x)))  # 112 -> 56
-        x = self.pool(F.relu(self.conv3(x)))  # 56 -> 28
+        x = self.pool(F.relu(self.conv1(x)))  # 32 -> 16
+        x = self.pool(F.relu(self.conv2(x)))  # 16 -> 8
+        x = self.pool(F.relu(self.conv3(x)))  # 8 -> 4
 
         x = torch.flatten(x, 1)
 
