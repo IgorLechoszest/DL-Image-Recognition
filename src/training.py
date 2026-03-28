@@ -7,7 +7,11 @@ def train(model, loader, optimizer, criterion, device):
     print("Training Loop")
 
     model.train()
-
+    
+    for module in model.modules():
+        if isinstance(module, torch.nn.BatchNorm2d):
+            module.eval()
+            
     total_loss = 0
 
     for images, labels in tqdm(loader):

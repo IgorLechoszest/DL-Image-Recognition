@@ -3,6 +3,7 @@ from torchvision.transforms import v2
 from torch.utils.data import default_collate
 
 def basic_transforms(augmentation_type=None, model_type=None):
+    transformations = []
 
     if augmentation_type == 'flip':
         transformations = [
@@ -23,30 +24,31 @@ def basic_transforms(augmentation_type=None, model_type=None):
     else:
         transformations = []
     
-    if model_type == "ResNet" or model_type == "ConvNeXt":
-        transformations = transforms.Compose(transformations + 
-        [transforms.Resize((224, 224)),
-        transforms.ToTensor(),
-        transforms.Normalize(
-        mean=[0.485, 0.456, 0.406],
-        std=[0.229, 0.224, 0.225]
-    )])
+    if model_type in ["ResNet", "DenseNet121", "VGG16_BN"]:
+        transformations.extend([
+            transforms.Resize((224, 224)),
+            transforms.ToTensor(),
+            transforms.Normalize(
+                mean=[0.485, 0.456, 0.406],
+                std=[0.229, 0.224, 0.225]
+            )
+        ])
     
-    
-    elif model_type == "VisionTransformer":
-        transformations = transforms.Compose(transformations + 
-        [transforms.Resize((224, 224)),
-        transforms.ToTensor(),
-        transforms.Normalize(
-        mean=[0.5, 0.5, 0.5],
-        std=[0.5, 0.5, 0.5])])
-    
+    elif model_type == "SmallCNN":
+        transformations.extend([
+            # CINIC-10 ma 32x32, więc nie robimy Resize
+            transforms.ToTensor(),
+            transforms.Normalize(
+                mean=[0.4789, 0.4723, 0.4305],
+                std=[0.2421, 0.2383, 0.2587]
+            )
+        ])
+
     else:
-        transformations = transforms.Compose(transformations + 
-        [transforms.ToTensor()])
+        transformations.extend([transforms.ToTensor()])
     
 
-    return transformations
+    return transforms.Compose(transformations)
 
 
 def cutmix_collate_fn(batch):

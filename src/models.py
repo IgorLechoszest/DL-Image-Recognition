@@ -1,11 +1,10 @@
 import torchvision.models as models
-from transformers import ViTForImageClassification
 import torch.nn as nn
 import torch.nn.functional as F
 import torch
 
 class SmallCNN(nn.Module): 
-    def __init__(self, num_classes=10):
+    def __init__(self, num_classes=10, dropout_rate=0.2):
         super(SmallCNN, self).__init__()
 
         self.conv1 = nn.Conv2d(3, 16, kernel_size=3, padding=1)
@@ -13,73 +12,81 @@ class SmallCNN(nn.Module):
         self.conv2 = nn.Conv2d(16, 32, kernel_size=3, padding=1)
         self.conv3 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
 
-        # Updated math for 32x32 input: 32 -> 16 -> 8 -> 4
+        self.dropout = nn.Dropout(p=dropout_rate)
+
         self.fc1 = nn.Linear(64 * 4 * 4, 128) 
         self.fc2 = nn.Linear(128, num_classes)
 
     def forward(self, x):
-        x = self.pool(F.relu(self.conv1(x)))  # 32 -> 16
-        x = self.pool(F.relu(self.conv2(x)))  # 16 -> 8
-        x = self.pool(F.relu(self.conv3(x)))  # 8 -> 4
+        x = self.pool(F.relu(self.conv1(x)))  
+        x = self.pool(F.relu(self.conv2(x)))  
+        x = self.pool(F.relu(self.conv3(x)))  
 
         x = torch.flatten(x, 1)
 
+        x = self.dropout(x)
         x = F.relu(self.fc1(x))
+        
+        x = self.dropout(x) 
         x = self.fc2(x)
 
         return x
 
-def ResNet152():
-
+def ResNet152(dropout_rate=0.2):
     model = models.resnet152(pretrained=True)
 
     for param in model.parameters():
         param.requires_grad = False
     
-    model.fc = nn.Linear(model.fc.in_features, 10)
+    model.fc = nn.Sequential(
+        nn.Dropout(p=dropout_rate),
+        nn.Linear(model.fc.in_features, 10)
+    )
     
     for param in model.fc.parameters():
         param.requires_grad = True
     return model
 
 
-def ConvNeXtLarge():
+def DenseNet121(dropout_rate=0.2):
+    model = models.densenet121(pretrained=True)
 
-    model = models.convnext_large(pretrained=True)
     for param in model.parameters():
         param.requires_grad = False
     
-    model.classifier[2] = nn.Linear(1536, 10)
+    model.classifier = nn.Sequential(
+        nn.Dropout(p=dropout_rate),
+        nn.Linear(model.classifier.in_features, 10)
+    )
     
     for param in model.classifier.parameters():
         param.requires_grad = True
-
     return model
 
-def VisionTransformer():
 
-    model = ViTForImageClassification.from_pretrained(
-        "google/vit-huge-patch14-224-in21k",
-        num_labels=10
-    )
-    for param in model.vit.parameters():
+def VGG16_BN(dropout_rate=0.5):
+    model = models.vgg16_bn(pretrained=True)
+
+    for param in model.parameters():
         param.requires_grad = False
     
-    for param in model.classifier.parameters():
+    model.classifier[6] = nn.Sequential(
+        nn.Dropout(p=dropout_rate),
+        nn.Linear(model.classifier[6].in_features, 10)
+    )
+    
+    for param in model.classifier[6].parameters():
         param.requires_grad = True
     return model
 
-def get_model(model):
-
-    if model == "ResNet":
-        return ResNet152()
-    elif model == "ConvNeXt":
-        return ConvNeXtLarge()
-    elif model == "VisionTransformer":
-        return VisionTransformer()
-    elif model == "SmallCNN":
-        return SmallCNN()
+def get_model(model_name, dropout_rate=0.2):
+    if model_name == "ResNet":
+        return ResNet152(dropout_rate)
+    elif model_name == "SmallCNN":
+        return SmallCNN(dropout_rate=dropout_rate)
+    elif model_name == "DenseNet121":
+        return DenseNet121(dropout_rate)
+    elif model_name == "VGG16_BN":
+        return VGG16_BN(dropout_rate)
     else:
-        raise ValueError('You must select one of following model: ["ResNet", "ConvNeXt", "VisionTransformer", "SmallCNN"].')    
-
-
+        raise ValueError('You must select one of following model: ["ResNet", "SmallCNN", "DenseNet121", "VGG16_BN"].')
